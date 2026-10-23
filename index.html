@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>沙海成林 · 防沙治沙 | From Sand Sea to Forest · Combating Desertification</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--ink:#4a3f2a;--muted:#8a7a5e;--green:#3f7a3a;--green-d:#2b5527;--sand:#c9a86a;--card:rgba(255,255,255,.72)}
+html{scroll-behavior:smooth}
+body{font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",system-ui,sans-serif;color:var(--ink);background:#F0E5CB;transition:background .3s linear;line-height:1.8;overflow-x:hidden}
+.wrap{max-width:960px;margin:0 auto;padding:0 24px}
+/* hero */
+.hero{min-height:100vh;position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;overflow:hidden}
+#sand-canvas{position:absolute;inset:0;pointer-events:none}
+.hero h1{font-size:clamp(54px,9vw,104px);font-weight:900;letter-spacing:.16em;position:relative;z-index:2;text-shadow:0 4px 30px rgba(255,255,255,.7)}
+.hero h1 .g{color:var(--green)}
+.hero p{position:relative;z-index:2;max-width:640px;color:#6b5c42;font-size:clamp(15px,2.2vw,19px);margin-top:12px}
+.hero .down{position:absolute;bottom:110px;z-index:2;letter-spacing:4px;font-size:13px;color:#8a7a5e;animation:bob 2s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(10px)}}
+.dunes{position:absolute;bottom:-2px;left:0;width:100%;z-index:1}
+section{padding:84px 0;position:relative;z-index:2}
+.tag{display:inline-block;font-size:12px;letter-spacing:5px;color:var(--green);border:1px solid var(--green);border-radius:20px;padding:4px 16px;margin-bottom:16px;background:rgba(63,122,58,.08)}
+h2{font-size:clamp(27px,4vw,40px);margin-bottom:12px;font-weight:800}
+.lead{color:var(--muted);font-size:16.5px;max-width:700px;margin-bottom:28px}
+.card{background:var(--card);backdrop-filter:blur(8px);border:1px solid rgba(160,130,80,.25);border-radius:18px;padding:30px;margin:22px 0;box-shadow:0 10px 34px rgba(140,110,60,.15)}
+canvas.chart{width:100%;height:300px;background:rgba(255,255,255,.5);border-radius:14px}
+/* growth grid */
+#grid{display:grid;grid-template-columns:repeat(24,1fr);gap:3px;margin:20px 0}
+#grid .cell{aspect-ratio:1;border-radius:3px;background:#e3d3ae;transition:background .3s}
+#grid .cell.on{background:linear-gradient(135deg,#5c9a52,#3f7a3a)}
+#grid-lab{display:flex;justify-content:space-between;align-items:center;font-size:15px;margin-top:6px}
+#grid-year{font-size:34px;font-weight:900;color:var(--green)}
+input[type=range].big{width:100%;accent-color:var(--green);height:32px;cursor:pointer;margin:14px 0 4px}
+#autoplay{padding:9px 26px;border-radius:24px;border:2px solid var(--green);background:transparent;color:var(--green);font-size:14px;cursor:pointer;font-weight:700}
+#autoplay:hover{background:var(--green);color:#fff}
+/* checkerboard sim */
+#sim-wrap{position:relative}
+#sim{width:100%;height:380px;background:linear-gradient(#e8d5a8,#dfc493);border-radius:14px;cursor:crosshair;display:block}
+#sim-ui{display:flex;gap:14px;align-items:center;margin-top:14px;flex-wrap:wrap;font-size:14px}
+#sim-ui button{padding:9px 22px;border-radius:20px;border:2px solid var(--green);background:var(--green);color:#fff;cursor:pointer;font-size:14px;font-weight:700}
+#sim-ui button.ghost{background:transparent;color:var(--green)}
+#wind-lab b{color:#c96f3f;font-size:18px}
+/* plant cards */
+.plants{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:18px}
+.plant{background:var(--card);border-radius:16px;padding:24px 20px;text-align:center;border:1px solid rgba(160,130,80,.25);transition:transform .25s,box-shadow .25s}
+.plant:hover{transform:translateY(-6px);box-shadow:0 14px 30px rgba(63,122,58,.2)}
+.plant .e{font-size:52px;margin-bottom:8px}
+.plant h4{font-size:18px;color:var(--green-d);margin-bottom:8px}
+.plant p{font-size:13.5px;color:var(--muted)}
+.method{border-left:4px solid var(--green);padding:4px 0 4px 20px;margin:24px 0}
+.method h4{font-size:19px;margin-bottom:6px}
+.method p{font-size:15px;color:var(--muted)}
+/* my forest */
+#myforest{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:10px;margin:20px 0;min-height:120px}
+.tree{font-size:40px;text-align:center;cursor:default;animation:pop .5s}
+@keyframes pop{0%{transform:scale(0)}70%{transform:scale(1.25)}100%{transform:scale(1)}}
+.pledge-row{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:12px;cursor:pointer}
+.pledge-row:hover{background:rgba(63,122,58,.08)}
+.pledge-row .box{width:24px;height:24px;border:2px solid var(--green);border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--green);font-weight:900;margin-top:3px}
+.pledge-row.done .box{background:var(--green);color:#fff}
+.pledge-row.done .txt{color:var(--muted);text-decoration:line-through}
+#forest-count{color:var(--green);font-weight:700;font-size:15px;margin-top:8px}
+footer{padding:60px 0 46px;text-align:center;color:var(--muted);font-size:13px;position:relative;z-index:2}
+.src{font-size:12px;color:#a8946f;margin-top:18px;list-style:none}
+.src li{margin:3px 0}
+/* bilingual */
+.en{display:block;font-size:0.72em;opacity:0.72;font-weight:400;letter-spacing:0.02em;margin-top:4px;line-height:1.6}
+</style>
+</head>
+<body>
+
+<header class="hero" id="hero">
+  <canvas id="sand-canvas"></canvas>
+  <h1>沙海<span class="g">成林</span><span class="en">From Sand Sea to Forest</span></h1>
+  <p>从"沙进人退"到"绿进沙退"——<span class="en">From "sand advancing, people retreating" to "green advancing, sand retreating" —</span><br>这是一场持续了七十多年的绿色远征。向下滚动，看荒漠如何变成绿洲。<span class="en">a green expedition spanning over seventy years. Scroll down and watch desert turn into oasis.</span></p>
+  <div class="down">▼ 进入荒漠 ▼<span class="en">▼ Enter the desert ▼</span></div>
+  <svg class="dunes" viewBox="0 0 1200 140" preserveAspectRatio="none">
+    <path d="M0,90 C200,40 380,120 600,80 C820,40 1000,110 1200,70 L1200,140 L0,140 Z" fill="#ddc08a"/>
+    <path d="M0,110 C250,70 450,130 700,100 C900,75 1050,125 1200,100 L1200,140 L0,140 Z" fill="#c9a86a"/>
+  </svg>
+</header>
+
+<div class="wrap">
+
+<section id="s-turn">
+  <span class="tag">第一章 · 拐点：2004<span class="en">Ch.1 · The Turning Point: 2004</span></span>
+  <h2>荒漠化，第一次"刹住了车"<span class="en">Desertification Hit the Brakes for the First Time</span></h2>
+  <p class="lead">上世纪末，中国荒漠化土地每年仍在扩展。2004 年，全国荒漠化和沙化土地面积首次实现"双缩减"——这是历史性的拐点。<span class="en">At the end of the last century, China's desertified land was still expanding every year. In 2004, both desertified and sandy land shrank for the first time nationwide — a historic turning point.</span></p>
+  <div class="card">
+    <canvas class="chart" id="desert-chart" width="900" height="300"></canvas>
+    <ul class="src"><li>数据来源：国家林业和草原局历次荒漠化、沙化土地监测公报（示意）<span class="en">Source: National Forestry and Grassland Administration monitoring bulletins (illustrative)</span></li></ul>
+  </div>
+</section>
+
+<section id="s-growth">
+  <span class="tag">第二章 · 森林覆盖率：从 8.6% 到 25%<span class="en">Ch.2 · Forest Cover: From 8.6% to 25%</span></span>
+  <h2>点亮中国的绿色版图<span class="en">Lighting Up China's Green Map</span></h2>
+  <p class="lead">每一个格子代表一片土地。拖动滑块（或点击自动播放），看 1949 年到 2023 年，绿色如何一年年点亮。<span class="en">Each cell is a patch of land. Drag the slider (or hit autoplay) and watch green light up year by year, 1949 → 2023.</span></p>
+  <div class="card">
+    <div id="grid"></div>
+    <input type="range" class="big" id="gy" min="1949" max="2023" value="1949" step="1">
+    <div id="grid-lab">
+      <div><span id="grid-year">1949</span> 年 · 森林覆盖率 <b id="grid-pct" style="color:var(--green)">8.6%</b><span class="en">Forest coverage</span></div>
+      <button id="autoplay">▶ 自动播放<span class="en">Autoplay</span></button>
+    </div>
+    <ul class="src"><li>数据来源：国家林草局；1949 年约 8.6%，2023 年超 25%<span class="en">Source: NFGA; ~8.6% in 1949, over 25% in 2023</span></li></ul>
+  </div>
+</section>
+
+<section id="s-sim">
+  <span class="tag">第三章 · 草方格：沙漠上的"中国魔方"<span class="en">Ch.3 · Straw Checkerboards: The "Chinese Rubik's Cube" on Sand</span></span>
+  <h2>亲手铺设草方格，挡住风沙<span class="en">Lay Straw Checkerboards by Hand, Block the Wind and Sand</span></h2>
+  <p class="lead">草方格沙障：用麦草扎成 1 米见方的格子，能让地表风速降低、输沙量减少 90% 以上。点击沙地铺设草方格，看风沙如何被驯服、绿芽如何长出。<span class="en">Straw-checkerboard sand barriers: 1-meter grids of wheat straw that cut surface wind speed and reduce sand transport by over 90%. Click the sand to lay checkerboards and watch the wind tame and green sprouts emerge.</span></p>
+  <div class="card">
+    <div id="sim-wrap"><canvas id="sim" width="880" height="380"></canvas></div>
+    <div id="sim-ui">
+      <button id="sim-reset" class="ghost">↺ 重置沙漠<span class="en">Reset desert</span></button>
+      <span id="wind-lab">地表输沙量：<b id="wind-v">100%</b><span class="en">Sand transport</span></span>
+      <span style="color:var(--muted);font-size:13px">👆 点击沙地铺设草方格<span class="en">👆 Click the sand to lay checkerboards</span></span>
+    </div>
+  </div>
+</section>
+
+<section id="s-method">
+  <span class="tag">第四章 · 治沙三法与先锋植物<span class="en">Ch.4 · Three Methods & Pioneer Plants</span></span>
+  <h2>中国人治沙的智慧<span class="en">The Wisdom of China's Sand Fighters</span></h2>
+  <div class="method"><h4>🌾 生物治沙 —— 以绿治荒<span class="en">Biological control — greening the barren</span></h4><p>乔灌草结合，封沙育林育草。在流动沙丘迎风坡扎设沙障、背风坡种灌木，让沙漠"穿上绿衣"。<span class="en">Trees, shrubs and grasses combined; sand fenced off for forest and grass recovery. Barriers on windward slopes, shrubs on leeward slopes — dressing the desert in green.</span></p></div>
+  <div class="method"><h4>🧱 工程治沙 —— 给沙漠"打格子"<span class="en">Engineering control — gridding the desert</span></h4><p>草方格、沙障、封禁保护带。包兰铁路两侧的草方格固沙带，被称为"世界治沙奇迹"。<span class="en">Checkerboards, sand barriers, protected enclosures. The checkerboard belts along the Baotou–Lanzhou Railway are hailed as a "world miracle of sand control".</span></p></div>
+  <div class="method"><h4>💧 综合治沙 —— 沙里淘金<span class="en">Integrated control — gold from the sand</span></h4><p>光伏治沙板下种草、沙漠旅游、梭梭嫁接肉苁蓉——让治沙也能产生经济价值，形成良性循环。<span class="en">Grass under solar panels, desert tourism, cistanche grafted onto haloxylon — making sand control economically rewarding in a virtuous cycle.</span></p></div>
+  <h2 style="margin-top:44px">🌵 先锋植物天团<span class="en">Pioneer Plant All-Stars</span></h2>
+  <p class="lead">它们是第一批冲进沙漠的"绿色士兵"。<span class="en">They were the first "green soldiers" to charge into the desert.</span></p>
+  <div class="plants">
+    <div class="plant"><div class="e">🌿</div><h4>梭梭<span class="en">Haloxylon</span></h4><p>"沙漠植被之王"。根系深达 10 米，耐旱耐盐碱，还能嫁接名贵药材肉苁蓉。<span class="en">"King of desert vegetation." Roots reach 10 m deep; drought- and salt-tolerant; hosts prized medicinal cistanche.</span></p></div>
+    <div class="plant"><div class="e">🌾</div><h4>沙柳<span class="en">Salix psammophila</span></h4><p>"平茬复壮"越砍越旺，是固沙造林的先锋，也是优质的生物质能源。<span class="en">Thrives on coppicing — the vanguard of sand-fixing forests and quality biomass energy.</span></p></div>
+    <div class="plant"><div class="e">🌼</div><h4>柠条<span class="en">Caragana</span></h4><p>耐旱、耐寒、耐贫瘠，花开时一片金黄，还是优质的饲料和蜜源植物。<span class="en">Drought-, cold- and barren-tolerant; blooms golden; fine forage and honey plant.</span></p></div>
+    <div class="plant"><div class="e">🫐</div><h4>沙棘<span class="en">Sea buckthorn</span></h4><p>"维生素 C 之王"，果实营养丰富，根系固沙能力极强，兼具生态与经济价值。<span class="en">"King of vitamin C"; nutritious berries, powerful sand-fixing roots — ecological and economic value in one.</span></p></div>
+  </div>
+</section>
+
+<section id="s-forest">
+  <span class="tag">终章 · 种一片你的小林<span class="en">Finale · Plant Your Own Grove</span></span>
+  <h2>种下承诺，长出一片林<span class="en">Plant Pledges, Grow a Forest</span></h2>
+  <p class="lead">勾选你愿意做到的治沙/环保行动，每勾选一项，你的小林里就长出一棵树。保存在这台设备上。<span class="en">Check the anti-desertification / eco actions you'll take — each one grows a tree in your grove. Saved on this device.</span></p>
+  <div class="card">
+    <div id="myforest"></div>
+    <div id="plist"></div>
+    <div id="forest-count"></div>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    <p>🌳 沙海成林 —— 前人栽树，后人乘凉；今人栽树，后人不再吃沙。<span class="en">From sand sea to forest — past generations planted for our shade; we plant so the next eats no sand.</span></p>
+    <ul class="src">
+      <li>数据来源：国家林业和草原局 · 中国科学院 · 联合国防治荒漠化公约（UNCCD）<span class="en">Sources: NFGA · Chinese Academy of Sciences · UNCCD</span></li>
+      <li>本页面为环保科普公益页面，图表为公开数据示意<span class="en">A non-profit environmental education page; charts illustrate public data</span></li>
+    </ul>
+  </div>
+</footer>
+
+<script>
+/* ===== background: sand -> green on scroll ===== */
+(function(){
+  function onScroll(){
+    var h=document.documentElement,p=h.scrollTop/(h.scrollHeight-h.clientHeight||1);
+    p=Math.max(0,Math.min(1,p));
+    var top=[240,229,203],bot=[221,233,213]; // #F0E5CB -> #DDE9D5
+    var c=top.map(function(t,i){return Math.round(t+(bot[i]-t)*p);});
+    document.body.style.background='rgb('+c.join(',')+')';
+  }
+  addEventListener('scroll',onScroll,{passive:true});onScroll();
+})();
+
+/* ===== hero sand particles ===== */
+(function(){
+  var cv=document.getElementById('sand-canvas'),ctx=cv.getContext('2d'),ps=[];
+  function size(){cv.width=cv.offsetWidth;cv.height=cv.offsetHeight;}
+  size();addEventListener('resize',size);
+  for(var i=0;i<130;i++)ps.push({x:Math.random(),y:Math.random(),s:Math.random()*2.4+0.6,v:Math.random()*0.0035+0.001,a:Math.random()*0.5+0.15});
+  (function loop(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    ps.forEach(function(p){
+      p.x+=p.v;if(p.x>1){p.x=0;p.y=Math.random();}
+      ctx.beginPath();ctx.arc(p.x*cv.width,p.y*cv.height,p.s,0,7);
+      ctx.fillStyle='rgba(180,140,80,'+p.a+')';ctx.fill();
+    });
+    requestAnimationFrame(loop);
+  })();
+})();
+
+/* ===== desertification inflection chart ===== */
+(function(){
+  var cv=document.getElementById('desert-chart'),ctx=cv.getContext('2d');
+  var W=cv.width,H=cv.height,pad=48;
+  // 示意：荒漠化土地面积（万平方公里）
+  var yrs=[1990,1994,1999,2004,2009,2014,2019,2024];
+  var vals=[262,262.2,263.6,263.1,262.4,261.2,257.4,254.5];
+  function X(i){return pad+i*(W-2*pad)/(yrs.length-1);}
+  function Y(v){return H-pad-((v-250)/16)*(H-2*pad);}
+  ctx.strokeStyle='rgba(90,70,40,.25)';ctx.fillStyle='#8a7a5e';ctx.font='12px sans-serif';
+  ctx.beginPath();ctx.moveTo(pad,pad);ctx.lineTo(pad,H-pad);ctx.lineTo(W-pad,H-pad);ctx.stroke();
+  yrs.forEach(function(y,i){ctx.fillText(y,X(i)-14,H-pad+18);});
+  [255,260,265].forEach(function(v){ctx.fillText(v+'万km²',4,Y(v)+4);
+    ctx.beginPath();ctx.moveTo(pad,Y(v));ctx.lineTo(W-pad,Y(v));ctx.strokeStyle='rgba(90,70,40,.1)';ctx.stroke();});
+  // curve
+  ctx.beginPath();
+  yrs.forEach(function(y,i){i?ctx.lineTo(X(i),Y(vals[i])):ctx.moveTo(X(0),Y(vals[0]));});
+  ctx.strokeStyle='#c96f3f';ctx.lineWidth=3.5;ctx.stroke();
+  // fill under
+  ctx.lineTo(X(yrs.length-1),H-pad);ctx.lineTo(X(0),H-pad);ctx.closePath();
+  ctx.fillStyle='rgba(201,111,63,.12)';ctx.fill();
+  // inflection marker at 2004
+  var ix=3;
+  ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(X(ix),pad);ctx.lineTo(X(ix),H-pad);
+  ctx.strokeStyle='#3f7a3a';ctx.lineWidth=2;ctx.stroke();ctx.setLineDash([]);
+  ctx.beginPath();ctx.arc(X(ix),Y(vals[ix]),6,0,7);ctx.fillStyle='#3f7a3a';ctx.fill();
+  ctx.fillStyle='#2b5527';ctx.font='bold 13px sans-serif';
+  ctx.fillText('2004 · 首次双缩减',X(ix)-52,pad+16);
+  ctx.font='12px sans-serif';ctx.fillStyle='#8a7a5e';
+  ctx.fillText('拐点之后：持续治理，面积逐年减少',X(ix)+12,Y(vals[ix])+34);
+})();
+
+/* ===== forest coverage growth grid ===== */
+(function(){
+  var grid=document.getElementById('grid'),cells=[],N=24*12;
+  for(var i=0;i<N;i++){var c=document.createElement('div');c.className='cell';grid.appendChild(c);cells.push(c);}
+  var gy=document.getElementById('gy'),gyy=document.getElementById('grid-year'),gp=document.getElementById('grid-pct');
+  function pct(y){ // 1949:8.6% -> 2023:25%+，分段插值
+    if(y<=1980)return 8.6+(y-1949)*(12.7-8.6)/31;
+    if(y<=2000)return 12.7+(y-1980)*(16.55-12.7)/20;
+    return 16.55+(y-2000)*(25.0-16.55)/23;
+  }
+  function paint(y){
+    var p=pct(y),n=Math.round(N*p/30); // 30% 封顶映射
+    cells.forEach(function(c,i){c.classList.toggle('on',i<n);});
+    gyy.textContent=y;gp.textContent=p.toFixed(1)+'%';
+  }
+  gy.addEventListener('input',function(){stop();paint(+gy.value);});
+  var timer=null,btn=document.getElementById('autoplay');
+  function stop(){if(timer){clearInterval(timer);timer=null;btn.innerHTML='▶ 自动播放<span class="en">Autoplay</span>';}}
+  btn.addEventListener('click',function(){
+    if(timer){stop();return;}
+    btn.innerHTML='⏸ 暂停<span class="en">Pause</span>';
+    timer=setInterval(function(){
+      var y=+gy.value+1;if(y>2023){stop();return;}
+      gy.value=y;paint(y);
+    },90);
+  });
+  paint(1949);
+})();
+
+/* ===== straw checkerboard simulation ===== */
+(function(){
+  var cv=document.getElementById('sim'),ctx=cv.getContext('2d');
+  var W=cv.width,H=cv.height,cell=44,cols=Math.ceil(W/cell),rows=Math.ceil(H/cell);
+  var placed={},sprouts={},parts=[];
+  for(var i=0;i<160;i++)parts.push({x:Math.random()*W,y:Math.random()*H,v:2+Math.random()*2.5,s:Math.random()*2+1});
+  function covered(x,y){
+    var c=Math.floor(x/cell),r=Math.floor(y/cell);
+    return placed[c+','+r];
+  }
+  function windFactor(){
+    var n=Object.keys(placed).length,total=cols*rows;
+    return 1-Math.min(0.92,n/total*3.2); // 铺满约 1/3 即达最大效果
+  }
+  function loop(){
+    ctx.clearRect(0,0,W,H);
+    // checkerboards
+    for(var k in placed){
+      var p=k.split(','),x=p[0]*cell,y=p[1]*cell;
+      ctx.strokeStyle='#a8843f';ctx.lineWidth=3;
+      ctx.strokeRect(x+2,y+2,cell-4,cell-4);
+      // sprouts
+      if(!sprouts[k]&&Math.random()<0.008)sprouts[k]=0;
+      if(sprouts[k]!==undefined&&sprouts[k]<1)sprouts[k]+=0.01;
+      if(sprouts[k]>0){
+        var g=sprouts[k];
+        ctx.fillStyle='rgba(63,122,58,'+(0.35+0.65*g)+')';
+        var cx=x+cell/2,cy=y+cell/2;
+        ctx.beginPath();ctx.ellipse(cx,cy-8*g,4,10*g,0,0,7);ctx.fill();
+        ctx.beginPath();ctx.ellipse(cx-8,cy-4*g,3,7*g,-0.5,0,7);ctx.fill();
+        ctx.beginPath();ctx.ellipse(cx+8,cy-4*g,3,7*g,0.5,0,7);ctx.fill();
+      }
+    }
+    // sand particles
+    var f=windFactor();
+    ctx.fillStyle='rgba(150,115,65,.55)';
+    parts.forEach(function(pt){
+      var slow=covered(pt.x,pt.y)?0.25:1;
+      pt.x+=pt.v*f*slow;
+      if(pt.x>W){pt.x=-4;pt.y=Math.random()*H;}
+      ctx.beginPath();ctx.arc(pt.x,pt.y,pt.s*f+0.4,0,7);ctx.fill();
+    });
+    document.getElementById('wind-v').textContent=Math.round(f*100)+'%';
+    requestAnimationFrame(loop);
+  }
+  cv.addEventListener('click',function(e){
+    var r=cv.getBoundingClientRect();
+    var x=(e.clientX-r.left)*(W/r.width),y=(e.clientY-r.top)*(H/r.height);
+    var c=Math.floor(x/cell),rr=Math.floor(y/cell),k=c+','+rr;
+    if(placed[k]){delete placed[k];delete sprouts[k];}else{placed[k]=1;}
+  });
+  document.getElementById('sim-reset').addEventListener('click',function(){placed={};sprouts={};});
+  loop();
+})();
+
+/* ===== my forest pledges ===== */
+(function(){
+  var items=[
+    '了解"草方格"治沙，讲给一个人听',
+    '参与一次植树 / 认养一棵树',
+    '节约用纸，双面打印、电子票据',
+    '不用一次性筷子，自带餐具',
+    '支持一件沙漠地区的农产品（如肉苁蓉、沙棘汁）',
+    '旅行时不越野碾压草原 / 荒漠植被',
+    '向孩子讲一个治沙英雄的故事（王有德、石光银……）',
+    '把这页分享给一位朋友'
+  ];
+  var itemsEn=[
+    'Learn about straw-checkerboard sand control; tell one person',
+    'Join a tree-planting event / adopt a tree',
+    'Save paper: print double-sided, use e-receipts',
+    'Skip disposable chopsticks; bring your own utensils',
+    'Buy one farm product from desert regions (cistanche, sea-buckthorn juice…)',
+    'Never drive off-road over grassland / desert vegetation',
+    'Tell a child a sand-fighter hero story (Wang Youde, Shi Guangyin…)',
+    'Share this page with a friend'
+  ];
+  var trees=['🌱','🌿','🌳','🌲','🌴'];
+  var key='forest_pledges_v1',saved={};
+  try{saved=JSON.parse(localStorage.getItem(key)||'{}');}catch(e){}
+  var forest=document.getElementById('myforest'),list=document.getElementById('plist'),cnt=document.getElementById('forest-count');
+  function paint(){
+    forest.innerHTML='';var n=0;
+    items.forEach(function(t,i){
+      if(saved[i]){n++;
+        var s=document.createElement('div');s.className='tree';
+        s.textContent=trees[Math.min(trees.length-1,Math.floor(n/2))];
+        s.title=t;forest.appendChild(s);
+      }
+    });
+    if(!n)forest.innerHTML='<div style="color:var(--muted);font-size:14px;grid-column:1/-1">🌵 这里还是一片荒漠——勾选下面的承诺，种下第一棵树吧。<span class="en">🌵 Still a desert here — check a pledge below to plant your first tree.</span></div>';
+    list.querySelectorAll('.pledge-row').forEach(function(el,i){
+      var on=!!saved[i];el.classList.toggle('done',on);
+      el.querySelector('.box').textContent=on?'✓':'';
+    });
+    cnt.innerHTML='我的小林：'+n+' 棵树'+(n===items.length?' —— 绿洲建成！🏝️':'')+'<span class="en">My grove: '+n+' trees'+(n===items.length?' — oasis complete! 🏝️':'')+'</span>';
+  }
+  items.forEach(function(t,i){
+    var d=document.createElement('div');d.className='pledge-row';
+    d.innerHTML='<div class="box"></div><div class="txt">'+t+'<span class="en">'+itemsEn[i]+'</span></div>';
+    d.onclick=function(){saved[i]=!saved[i];try{localStorage.setItem(key,JSON.stringify(saved));}catch(e){}paint();};
+    list.appendChild(d);
+  });
+  paint();
+})();
+</script>
+</body>
+</html>
